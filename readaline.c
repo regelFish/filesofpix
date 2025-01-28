@@ -1,26 +1,58 @@
 #include "readaline.h"
-#include <stdio.h>
-int numChars = 0;
-int capacity = 2;
+#include <stdlib.h>
+#include <stdbool.h>
+
+
+
+bool mallocCheck(char *p, int SIZE) 
+{
+        if (p == NULL) {
+                fprintf(stderr, "Failed to malloc %d bytes of memory\n", SIZE);
+                return EXIT_FAILURE;
+        //what is a checked runtime error
+        } 
+        return true;
+}
+
+void expand(char **buffer, int *capacityP, int *numCharsP) 
+{
+
+        *capacityP = *capacityP*2 + 2;
+        char *temp = malloc(sizeof(char) * *capacityP);
+        mallocCheck(temp, sizeof(char) * *capacityP);
+
+        for (int i = 0; i < *numCharsP; i++) {
+                temp[i] = *buffer[i];
+        }
+        free(*buffer);
+        buffer = &temp;       
+
+}
 
 size_t readaline(FILE *inputfd, char **datapp) 
 {
+        int numChars = 0;
+        int capacity = 2;
         char *buff;
-        buff = malloc(sizeof(char)*capacity);
-        mallocCheck(buff, sizeof(char)*capacity);
+        buff = malloc(sizeof(char) * capacity);
+        mallocCheck(buff, sizeof(char) * capacity);
         free(buff);
+        char ch;
+        datapp = NULL;
 
         while ((ch = fgetc(inputfd))!= EOF) {
                 buff[numChars] = ch;
                 numChars++;
-                expand(&buff);
+                if(numChars == capacity) {
+                        expand(&buff, &capacity, &numChars);
+                }
         }
         // char buffer[1001];
 
         // fgets(buffer, sizeof(buffer), inputfd);
 
-        // // If the last character of buffer is not '\n', that means the line was too
-        // // long.
+        // If the last character of buffer is not '\n', that means the line was too
+        // long.
 
         // datapp = buff;
 
@@ -30,37 +62,19 @@ size_t readaline(FILE *inputfd, char **datapp)
         //         length++;
         // }
 
-        if (numChars == 0) {
-                datapp = NULL;
-        } else {
+        if (numChars > 0) {
                 datapp = &buff;
         }
+        (void) datapp;
 
         return numChars;
 }
 
-bool mallocCheck(char *p, int SIZE) 
+int main(int argc, char *argv[])
 {
-        if (p == NULL) {
-                fprintf(stderr, "Failed to malloc %d bytes of memory\n", SIZE);
-                return EXIT_FAILURE;
-        //what is a checked runtime error
-        } 
-}
+        (void) argc;
+        (void) argv;
 
-void expand(char **buffer) 
-{
-        if(numItems == capacity) {
-                capacity = capacity*2 + 2;
-                char *temp = malloc(sizeof(char)*capacity);
-                mallocCheck(temp, sizeof(char)*capacity);
-
-                for (int i = 0; i < numItems; i++) {
-                        temp[i] = data[i];
-                }
-                free(*buffer);
-                buffer = &temp;
-        }        
-
-
+        printf("hello, world");
+        return EXIT_SUCCESS;
 }

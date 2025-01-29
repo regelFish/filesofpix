@@ -1,0 +1,4 @@
+becauses its annoying when complining -Wfatal-errors has been taken out of CFLAGS
+in the makefile, DO NOT FORGET TO PUT IT BACK
+
+As of right now I haven't tested readaline so do not merge the branch until that happens

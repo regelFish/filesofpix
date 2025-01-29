@@ -19,7 +19,7 @@ EXECUTABLES = restoration
 #  files it really uses.
 #
 # Add your own .h files to the right side of the assingment below.
-INCLUDES = 
+INCLUDES = utilities.h
 
 # Do all C compies with gcc (at home you could try clang)
 CC = gcc
@@ -77,8 +77,9 @@ clean:
 #    Those .o files are linked together to build the corresponding
 #    executable.
 #
-restoration: restoration.o readaline.o
-	$(CC) $(LDFLAGS) -o restoration  restoration.o readaline.o $(LDLIBS)
+restoration: restoration.o readaline.o utilities.o
+	$(CC) $(LDFLAGS) -o restoration  restoration.o readaline.o utilities.o \
+	$(LDLIBS)
 
 #
 # Other Shortcuts worth nothing

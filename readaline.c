@@ -1,80 +1,55 @@
 #include "readaline.h"
 #include <stdlib.h>
-#include <stdbool.h>
+#include <except.h>
 
-
-
-bool mallocCheck(char *p, int SIZE) 
-{
-        if (p == NULL) {
-                fprintf(stderr, "Failed to malloc %d bytes of memory\n", SIZE);
-                return EXIT_FAILURE;
-        //what is a checked runtime error
-        } 
-        return true;
-}
+Except_T mem_aloc_fail = { "Failed to malloc memory" };
+Except_T bad_input = { "One or more arguments point to NULL" };
+Except_T read_fail = { "Failed to read file" };
 
 void expand(char **buffer, int *capacityP, int *numCharsP) 
 {
-
-        *capacityP = *capacityP*2 + 2;
-        char *temp = malloc(sizeof(char) * *capacityP);
-        mallocCheck(temp, sizeof(char) * *capacityP);
+        *capacityP = *capacityP * 2;
+        char *temp = malloc(sizeof(*temp) * (*capacityP));
+        if (temp == NULL)
+                RAISE(mem_aloc_fail);
 
         for (int i = 0; i < *numCharsP; i++) {
-                temp[i] = *buffer[i];
+                temp[i] = (*buffer)[i];
         }
         free(*buffer);
-        buffer = &temp;       
-
+        *buffer = temp;
 }
 
 size_t readaline(FILE *inputfd, char **datapp) 
 {
+        /* Error Checks */
+        if ((inputfd == NULL) || (datapp == NULL))
+                RAISE(bad_input);
+
         int numChars = 0;
-        int capacity = 2;
-        char *buff;
-        buff = malloc(sizeof(char) * capacity);
-        mallocCheck(buff, sizeof(char) * capacity);
-        free(buff);
+        int capacity = 1;
+        *datapp = malloc(sizeof(**datapp) * capacity);
+        if (*datapp == NULL) 
+                RAISE(mem_aloc_fail);
+
         char ch;
-        datapp = NULL;
+        ch = fgetc(inputfd);
 
-        while ((ch = fgetc(inputfd))!= EOF) {
-                buff[numChars] = ch;
-                numChars++;
-                if(numChars == capacity) {
-                        expand(&buff, &capacity, &numChars);
+        while (ch != EOF) {
+                if (ferror(inputfd))
+                        RAISE(read_fail);
+                if (ch != '\r') {
+                        if(numChars == capacity)
+                                expand(datapp, &capacity, &numChars);
+                        (*datapp)[numChars] = ch;
+                        numChars++;
+                        if (ch == '\n') {
+                                return numChars;
+                        }
                 }
+                ch = fgetc(inputfd);
         }
-        // char buffer[1001];
-
-        // fgets(buffer, sizeof(buffer), inputfd);
-
-        // If the last character of buffer is not '\n', that means the line was too
-        // long.
-
-        // datapp = buff;
-
-        // size_t length = 0;
-
-        // while (buffer[length] != '\0') {
-        //         length++;
-        // }
-
-        if (numChars > 0) {
-                datapp = &buff;
-        }
-        (void) datapp;
-
-        return numChars;
-}
-
-int main(int argc, char *argv[])
-{
-        (void) argc;
-        (void) argv;
-
-        printf("hello, world");
-        return EXIT_SUCCESS;
+        free(*datapp);    
+        *datapp = NULL;
+        return 0;
 }

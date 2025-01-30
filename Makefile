@@ -36,7 +36,7 @@ IFLAGS = -I. -I$(COMP40)/build/include -I$(HANSON)/include/cii
 
 
 # the next line enables you to compile and link against course software
-CFLAGS =  -g -std=c99 -Wall -Wextra -Werror -Wfatal-errors -pedantic $(IFLAGS)
+CFLAGS =  -g -std=c99 -Wall -Wextra -Werror -pedantic $(IFLAGS)
 
 # Linking flags, used in the linking step
 # Set debugging information and update linking path
@@ -80,6 +80,9 @@ clean:
 restoration: restoration.o readaline.o utilities.o
 	$(CC) $(LDFLAGS) -o restoration  restoration.o readaline.o utilities.o \
 	$(LDLIBS)
+
+utilities: utilities.o readaline.o
+	$(CC) $(LDFLAGS) -o utilities readaline.o utilities.o $(LDLIBS)
 
 #
 # Other Shortcuts worth nothing

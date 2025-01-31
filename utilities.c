@@ -55,6 +55,7 @@ void freeSeqNest(Seq_T *target)
         free(target);
 }
 
+
 /* 
  * purpose: 
  * 
@@ -74,6 +75,7 @@ void allocCheck(void* ptr)
  *             void *value
  *              
  * arguments: cl 
+
  */
 static void vfree(const void *key, void **value, void *cl)
 {
@@ -82,13 +84,19 @@ static void vfree(const void *key, void **value, void *cl)
         (void) cl;
 }
 
-/* 
- * seqToStr
- * purpose: 
- * 
- * arguments: seq 
- * arguments: length 
- * returns: char* 
+/* seqToStr
+ * purpose: converts a sequence of chars to a char array 
+ *
+ * Parameters: 
+ *      Seq_T *seq:     pointer to sequence to be turned into a char array
+ *      int length:     length of sequence (is passed through as parameter
+ *                      for readability)
+ * seq 
+ * Parameters: length 
+ * returns: char*, 
+ * Notes:
+ *      Assumes that this a sequence consisting of only chars or values that
+ *      can be casted to be chars
  */
 char *seqToStr(Seq_T *seq, int length)
 {
@@ -166,7 +174,6 @@ int parser(char **line, Seq_T *values, int length)
         free(*line);
         *line = corrLine;
 
-
         return corrLength;
 }
 
@@ -190,6 +197,7 @@ void printOutput(Seq_T *original)
         printf("P5\n%d %d\n%d\n", cols, rows, maxVal);
         for (int i = 0; i < rows; i++)
         {
+
                 for (int j = 0; j < cols; j++) {
                         printf("%c", 
                            *(int *)Seq_get(*(Seq_T *)Seq_get(*original, i), j));
@@ -198,11 +206,24 @@ void printOutput(Seq_T *original)
 }
 
 /* decorrupt
- * purpose: 
- * 
- * arguments: fd 
- * arguments: tableOfAtoms 
- * returns: Seq_T* 
+ * purpose: Reads through the corrupted file. Then it takes the parsed contents
+ *          of each line, and populates a table where the key is an atom of
+ *          non digit characters from a line and the value is a sequence of the
+ *          digit sequences where the corrupted non digit sequence shows up.
+ *          Once you find the same non digit sequence multiple times, you have
+ *          the corrupted non digit sequence. For each digit sequence you find
+ *          with the corrupted non digit sequence, you add the digit sequence
+ *          to its associated sequence of digit sequences.
+ *
+ * Parameters: 
+ *      FILE *fd:                       File stream pointer to the corrupted 
+ *                                      file.
+ *      Table_T *tableOfAtoms:          A pointer to the table of atoms and 
+ *                                      associated sequence of sequences.
+ * Parameters: tableOfAtoms 
+ * returns: 
+ *      Seq_T*, a pointer to the original raster of the image. This is a 
+ *      sequence of sequences of ints. 
  */
 Seq_T *decorrupt(FILE *fd, Table_T *tableOfAtoms)
 {
@@ -215,9 +236,7 @@ Seq_T *decorrupt(FILE *fd, Table_T *tableOfAtoms)
         while (length > 0) {
                 Seq_T *values = malloc(sizeof(*values));
                 *values = Seq_new(1);
-
                 length = parser(&line, values, length);
-
 
                 const char *tempAtom = Atom_new(line, length);
                 if (Table_get(*tableOfAtoms, tempAtom) == NULL) {
@@ -232,8 +251,6 @@ Seq_T *decorrupt(FILE *fd, Table_T *tableOfAtoms)
                                                                       tempAtom);
                         Seq_addhi(*original, values);
                 }
-                
-
                 values = NULL;
 
                 free(line);
@@ -244,12 +261,18 @@ Seq_T *decorrupt(FILE *fd, Table_T *tableOfAtoms)
 }
 
 /* restore
- * purpose: 
- * 
- * arguments: fd 
+ * purpose: Restore a file from its corrupted version into an uncorrupted pgm 
+ *          that can be read by Pnmrdr
+ *
+ * Parameters: 
+ *      FILE *fd:       A pointer to the opened file to be read through 
+ *                      restored
  */
 void restore(FILE *fd)
 {
+        /*
+         * original is the the original raster of the uncorrupted pgm file
+         */
         Seq_T *original = NULL;
         Table_T tableOfAtoms = Table_new(2, NULL, NULL);
 
@@ -257,17 +280,29 @@ void restore(FILE *fd)
 
         printOutput(original);
 
+
+        /* because original is pointing to a value inside the table, and this
+         * value needs to be accessed in the printOutput function, the memory used 
+         * by the table and its contents are freed here 
+        */
         Table_map(tableOfAtoms, vfree, NULL);
         
         Table_free(&tableOfAtoms);
 }
 
 /* open_or_abort
- * purpose: 
+ * purpose: opens file stream for use in program
  * 
- * arguments: fname 
- * arguments: mode 
- * returns: FILE* 
+ *
+ * Parameters: 
+ *      char *fname:    name of file to open
+ *      char *mode:     mode of file accessing
+ * returns: FILE*, a pointer to the file stream
+ * Expects:
+ *      fname and mode to not be NULL (for its use in this project, they will 
+ *      never be)
+ * Notes:
+ *      Will CRE if the file, named by fname fails to open
  */
 FILE *open_or_abort(char *fname, char *mode)
 {

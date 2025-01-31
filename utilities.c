@@ -56,10 +56,12 @@ void freeSeqNest(Seq_T *target)
 }
 
 
-/* 
- * purpose: 
+/* allocCheck
+ * purpose: Checks if memory has been successfully allocated to the given 
+ *              address. Will raise an Umem_aloc_fail exception if memory 
+ *              hasn't been allocated.
  * 
- * arguments: ptr 
+ * arguments: ptr, the address to check the memory of.
  */
 void allocCheck(void* ptr)
 {

@@ -1,3 +1,20 @@
+/* 
+ * readaline.c
+ * by Lawer Nyako {lnyako01}, Rigoberto Rodriguez-Anton {rrodri08}, 01/30/2025
+ * filesofpix
+ * 
+ * summary: readaline.c holds the implementation for reading a single \n 
+ *              terminated line from a filestream. 
+ *              readaline reads a single line from a file, and stores it in a
+ *              provided array. If necessary, readaline will expand the array
+ *              dynamically to make room for the full line. 
+ *              readaline returns 0 if there are no more lines to read. 
+ *              If EOF is reached while reading a line, readaline will work as
+ *              usuall.
+ *              
+ * 
+ */
+
 #include "readaline.h"
 #include <stdlib.h>
 #include <except.h>

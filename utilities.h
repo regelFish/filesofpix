@@ -4,7 +4,6 @@
 #include <atom.h>
 #include <table.h>
 #include <seq.h>
-#include <str.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>

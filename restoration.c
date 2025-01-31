@@ -1,3 +1,18 @@
+/* 
+ * restoration.c
+ * by Lawer Nyako {lnyako01}, Rigoberto Rodriguez-Anton {rrodri08}, 01/30/2025
+ * filesofpix
+ * 
+ * summary: Restoration takes a corrupted pgm file and restores its contents to
+ *              a readable state. 
+ * 
+ *              restoration.c Holds the main function for the filesofpix 
+ *              homework assignment. This file handles file opening and closing.
+ *              This file alse takes input from stdin in the case where no 
+ *              parameters are provided on execution.
+ * 
+ */
+
 #include "utilities.h"
 
 Except_T bad_use = { "Only one argument allowed" };

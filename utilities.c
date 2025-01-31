@@ -1,3 +1,17 @@
+/* 
+ * utilities.c
+ * by Lawer Nyako {lnyako01}, Rigoberto Rodriguez-Anton {rrodri08}, 01/30/2025
+ * filesofpix
+ * 
+ * summary: Holds the implementations for restore and related helper functions.
+ *              Additionally, holds the implementation for the open_or_abort 
+ *              function used by main.
+ *          
+ *              restore uses Hanson's data structures to quickly and efficiently
+ *              extract the original data from a corrupted pgm file, outputing
+ *              the result to stdout. 
+ */
+
 #include "utilities.h"
 
 Except_T open_abort = { "Could not open file" };
@@ -41,12 +55,27 @@ void freeSeqNest(Seq_T *target)
         free(target);
 }
 
-/*
+
+/* 
  * purpose: 
- *
- * Parameters: key 
- * Parameters: value 
- * Parameters: cl 
+ * 
+ * arguments: ptr 
+ */
+void allocCheck(void* ptr)
+{
+        if (ptr == NULL)
+                RAISE(Umem_aloc_fail);
+}
+
+/* vfree
+ * purpose: Higher order function to map into Table_map
+ * 
+ * arguments: 
+ *             const void *key 
+ *             void *value
+ *              
+ * arguments: cl 
+
  */
 static void vfree(const void *key, void **value, void *cl)
 {
@@ -72,10 +101,7 @@ static void vfree(const void *key, void **value, void *cl)
 char *seqToStr(Seq_T *seq, int length)
 {
         char* str = malloc(sizeof(*str) * (length));
-        
-        if (str == NULL) {
-                RAISE(Umem_aloc_fail);
-        }
+        allocCheck(str);
 
         for (int i = 0; i < length; i++)
         {
@@ -133,6 +159,7 @@ int parser(char **line, Seq_T *values, int length)
                                            (!makingInt || (i == length - 1))) {
                         char *endOfInt = *line + i;
                         int *toInt = malloc(sizeof(*toInt));
+                        allocCheck(toInt);
                         *toInt = strtol(startOfInt, &endOfInt, 10);
                         startOfInt = NULL;
                         makingInt = false;
@@ -159,7 +186,7 @@ int parser(char **line, Seq_T *values, int length)
  *                      width of the raster, alongside the contents of the 
  *                      raster, and print all of the information needed for 
  *                      to stdout.
- * returns: void 
+ * returns: void
  */
 void printOutput(Seq_T *original)
 {
@@ -168,13 +195,10 @@ void printOutput(Seq_T *original)
         int cols = Seq_length(*(Seq_T *)Seq_get(*original, 0));
         int maxVal = 255;
         printf("P5\n%d %d\n%d\n", cols, rows, maxVal);
-        for (int i = 0; i < Seq_length(*original); i++)
+        for (int i = 0; i < rows; i++)
         {
-                for (int j = 0; 
-                         j < Seq_length(*(Seq_T *)Seq_get(*original, i)); 
-                         j++) {
-                        
-                        /* prints contents at each point in raster */
+
+                for (int j = 0; j < cols; j++) {
                         printf("%c", 
                            *(int *)Seq_get(*(Seq_T *)Seq_get(*original, i), j));
                         }
@@ -217,6 +241,7 @@ Seq_T *decorrupt(FILE *fd, Table_T *tableOfAtoms)
                 const char *tempAtom = Atom_new(line, length);
                 if (Table_get(*tableOfAtoms, tempAtom) == NULL) {
                         Seq_T *valuesSeq = malloc(sizeof(*valuesSeq));
+                        allocCheck(valuesSeq);
                         *valuesSeq = Seq_seq(values, NULL);
                         Table_put(*tableOfAtoms, tempAtom, valuesSeq);
                 }

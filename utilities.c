@@ -188,10 +188,9 @@ void printOutput(Seq_T *original)
         int cols = Seq_length(*(Seq_T *)Seq_get(*original, 0));
         int maxVal = 255;
         printf("P5\n%d %d\n%d\n", cols, rows, maxVal);
-        for (int i = 0; i < Seq_length(*original); i++)
+        for (int i = 0; i < rows; i++)
         {
-                for (int j = 0; 
-                         j < Seq_length(*(Seq_T *)Seq_get(*original, i)); j++) {
+                for (int j = 0; j < cols; j++) {
                         printf("%c", 
                            *(int *)Seq_get(*(Seq_T *)Seq_get(*original, i), j));
                         }

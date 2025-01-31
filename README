@@ -1,28 +1,27 @@
 /**********************************************************
+* README
 * Project 1: filesofpix
 * CS 40
-* Lawer Nyako (lnyako01) & 
-* README
-* 1-29-2025
+* Lawer Nyako (lnyako01) & Rigoberto Rodriguez-Anton (rrodri08)
+* 1-30-2025
 *
 *********************************************************/
 
-• Acknowledges help you may have received or collaborative work you may have undertaken with classmates, programming partners, course staff, or others (including AIs)
-• Identifies what has been correctly implemented and what has not
-• Says approximately how many hours you have spent completing the assignment
 
+Implementation Successes/Failures:
+       Our readaline function can read lines of any length (as long as there is
+       enough RAM to store them).
+       We successfully restored all the files in the corruption folder in
+       /comp/40.
+       To our eyes, we have implemented restoration succefully to spec,
+       outputting readable and sensible raw pgm's to the stdout stream. These
+       pgms can be displayed using pnmrdr.
 
-Compile/run:
-     - Compile using
-            make zap
-     - run executable with
-            ./zap [zap | unzap] inputFile outputFile
-    
 
 
 Acknowledgements: 
 Slides/Lectures by Prof. Sheldon and Prof. Mendelsohn
 
 Time Spent:
-21 hours
+27 hours
 

@@ -1,6 +1,8 @@
 # 	           Makefile for CS 40 Homework 1
 #
 #     Author: Noah Mendelsohn (adapted from Norman Ramsey's compile script)
+#  			  Lawer Nyako (lnyako01) & Rigoberto Rodriguez-Anton (rrodri08)
+#  			  1/30/2025
 #
 #  Maintenance targets:
 #
@@ -89,4 +91,3 @@ restoration: restoration.o readaline.o utilities.o
 # $@ takes the name of the build rule and inserts it into the command
 # $^ inserts the relocatable object file names into the command
 #
-

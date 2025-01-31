@@ -21,7 +21,7 @@ Except_T Umem_aloc_fail = { "Failed to malloc memory" };
 /* isInt
  * purpose: Checks if an inputted char is a digit
  *
- * arguments: 
+ * Parameters: 
  *      char c: char to be checked
  * returns: true is c is a digit, false if not
  */
@@ -36,14 +36,14 @@ bool isInt(char c)
 /* freeSeqNest
  * purpose: Frees a nest of sequences.
  * 
- * arguments: target, a pointer to the target Sequence nest to free.
+ * Parameters: target, a pointer to the target Sequence nest to free.
  */
 void freeSeqNest(Seq_T *target)
 {
         for (int i = 0; i < Seq_length(*target); i++)
         {
                 for (int j = 0; j < 
-                                  Seq_length(*(Seq_T *)Seq_get(*target, i)); j++)
+                                 Seq_length(*(Seq_T *)Seq_get(*target, i)); j++)
                 {
                         free(Seq_get(*(Seq_T *)Seq_get(*target, i), j));
                 }
@@ -61,7 +61,7 @@ void freeSeqNest(Seq_T *target)
  *              address. Will raise an Umem_aloc_fail exception if memory 
  *              hasn't been allocated.
  * 
- * arguments: ptr, the address to check the memory of.
+ * Parameters: ptr, the address to check the memory of.
  */
 void allocCheck(void* ptr)
 {
@@ -72,12 +72,11 @@ void allocCheck(void* ptr)
 /* vfree
  * purpose: Higher order function to map into Table_map
  * 
- * arguments: 
+ * Parameters: 
  *             const void *key 
  *             void *value
  *              
- * arguments: cl 
-
+ * Parameters: cl 
  */
 static void vfree(const void *key, void **value, void *cl)
 {
@@ -116,7 +115,7 @@ char *seqToStr(Seq_T *seq, int length)
 /* parser
  * purpose: 
  *
- * arguments: 
+ * Parameters: 
  *      char **line:    a pointer to the address of the original 
  *      Seq_T *values:  
  *      int length:     
@@ -182,7 +181,7 @@ int parser(char **line, Seq_T *values, int length)
 /* printOutput
  * purpose: prints out the pgm file
  *
- * arguments: 
+ * Parameters: 
  *      Seq_T *original: a pointer to the sequence of sequences representing 
  *                      the raster. This will be used to get the length and 
  *                      width of the raster, alongside the contents of the 

@@ -27,7 +27,7 @@ Except_T read_fail = { "Failed to read file" };
  * purpose: checks if CharArrayList is at capacity and if so increases the 
  * capacity of the ArrayList
  *
- * arguments: 
+ * Parameters: 
  *      char **buffer:  a pointer to the address of the start of the char buffer
  *      int *capacityP: a pointer to the capacity of the buffer
  *      int *numCharsP: a pointer to the number of chars currently in the buffer
@@ -51,7 +51,7 @@ void expand(char **buffer, int *capacityP, int *numCharsP)
 /* readaline
  * purpose: Reads the contents of a file until newline or EOF is reached
  *
- * arguments: 
+ * Parameters: 
  *      FILE *inputfd: a pointer to a location in a filestream
  *      char **datapp: a pointer to a char string, where its contents are 
  *                      the contents of the line that was read in the file

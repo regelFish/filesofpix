@@ -21,8 +21,8 @@ Except_T bad_use = { "Only one argument allowed" };
  * purpose: Opens the requested file while performing error checks, and calls 
  *                      restore to remove corruption from the requested file. 
  *
- * arguments: 
- *      int argc:       The number of arguments provided when executed.
+ * Parameters: 
+ *      int argc:       The number of Parameters provided when executed.
  *      char *argv:     The contents in each argument. In this case, 
  *                      the name of the file to restore. 
  * 

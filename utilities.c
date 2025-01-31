@@ -19,18 +19,69 @@ bool isInt(char c)
         return false;
 }
 
-/* It is an unchecked exception for the inputed length to differ from the
- * actual length of the line
+void freeSeqNest(Seq_T *target)
+{
+        for (int i = 0; i < Seq_length(*target); i++)
+        {
+                for (int j = 0; j < 
+                                  Seq_length(*(Seq_T *)Seq_get(*target, i)); j++)
+                {
+                        free(Seq_get(*(Seq_T *)Seq_get(*target, i), j));
+                }
+                
+                Seq_free((Seq_T *)Seq_get(*target, i));
+                free((Seq_T *)Seq_get(*target, i));
+        }
+        Seq_free(target);
+        free(target);
+}
+
+static void vfree(const void *key, void **value, void *cl)
+{
+        freeSeqNest(*value);
+        (void) key;
+        (void) cl;
+}
+
+char *seqToStr(Seq_T *seq, int length)
+{
+        char* str = malloc(sizeof(*str) * (length));
+        
+        if (str == NULL) {
+                RAISE(Umem_aloc_fail);
+        }
+
+        //printf("corrSeq: ");
+        for (int i = 0; i < length; i++)
+        {
+                //printf("%c,  ", *((char *)Seq_get(corrSeq, i)));
+                str[i] = *((char *)Seq_get(*seq, i));
+        }
+
+        return str;
+}
+
+/* parser
+ * purpose: 
+ *
+ * arguments: 
+ *      char **line:    a pointer to the address of the original 
+ *      Seq_T *values:  
+ *      int length:     
+ * returns: the length of the string of corrupted characters
+ * Notes: 
+ *      - It is an unchecked exception for the inputted length to differ from 
+ *      the actual length of the line
+ *      - Will CRE if malloc fails
  */
 int parser(char **line, Seq_T *values, int length) 
 {
-        bool intReal = false;
+        bool makingInt = false;
         char* startOfInt = NULL;
         Seq_T corrSeq = Seq_new(1);
         
         for (int i = 0; i < length; i++)
         {
-                //printf("char %d of string %s with length of %d\n", i, *line, length);
                 char *c = (*line) + i;
                 //printf("%c\n", *c);
                 if (isInt(*c)) {
@@ -39,65 +90,49 @@ int parser(char **line, Seq_T *values, int length)
                          * character the start of the characters that will be
                          * turned into an int 
                          */
-                        if (!intReal) {
+                        if (!makingInt) {
                                 startOfInt = (*line + i);
                         }
-                        intReal = true;
+                        makingInt = true;
                 } else {
                         /* When you encouter a non-digit character, add 
                          * it to the string of corruption characters*/
-                        intReal = false;
+                        makingInt = false;
                         Seq_addhi(corrSeq, c);
                         //printf("corrSeq: ");
                         for (int i = 0; i < Seq_length(corrSeq); i++)
                         {
                                 //printf("%c,  ", *((char *)Seq_get(corrSeq, i)));
                         }
-                        //printf("\n");
-
                 }
+
                 /* Note: This is a bit of defensive programming and only 
                  *  one check is likely needed */
                 /* When the current character is not an digit and you have 
                  * encoutered a digit before, convert the "string" of digit 
                  * characters into an int and add it to the sequence of ints*/
-                if ((startOfInt != NULL) && (!intReal || (i == length-1))) {
-                        char *endptr = *line + i;
+                if ((startOfInt != NULL) &&
+                                           (!makingInt || (i == length - 1))) {
+                        char *endOfInt = *line + i;
                         int *toInt = malloc(sizeof(*toInt));
-                        *toInt = strtol(startOfInt, &endptr, 10);
+                        *toInt = strtol(startOfInt, &endOfInt, 10);
                         ////printf("int value: %d\n", toInt);
                         startOfInt = NULL;
-                        intReal = false;
+                        makingInt = false;
                         Seq_addhi(*values, toInt);
-                        
                 }
         }
-        /* NOTE for speed: doing this conversion is just as fast if not 
-        faster than using a dynamically allocated char array because if 
-        you did that you would have to spend time rewritting, if not once 
-        but possibly multiple times*/
         int corrLength = Seq_length(corrSeq);
-        char* corrLine = malloc(sizeof(*corrLine) * (corrLength));
-
-        //printf("corrSeq: ");
-        for (int i = 0; i < corrLength; i++)
-        {
-                //printf("%c,  ", *((char *)Seq_get(corrSeq, i)));
-                corrLine[i] = *((char *)Seq_get(corrSeq, i));
-        }
-        //printf("\nvalues (int seq): ");
-        for (int i = 0; i <Seq_length(*values); i++)
-        {
-                //printf("%d, ", *((int *)Seq_get(*values, i)));
-        }
+        char* corrLine = seqToStr(&corrSeq, corrLength);
+        
         Seq_free(&corrSeq);
-        if (corrLine == NULL) {
-                RAISE(Umem_aloc_fail);
-        }
+        
+        
 
         //printf("\ncorrLine pre switch: %s\n", corrLine);
         //printf("line pre switch: %s\n", *line);
-        //free(*line);
+        
+        free(*line);
         *line = corrLine;
         //printf("corrline after:%s\n", corrLine);
         //printf("line after: %s\n", *line);
@@ -106,83 +141,76 @@ int parser(char **line, Seq_T *values, int length)
         return corrLength;
 }
 
-/*
+/* printOutput
+ * purpose: prints out the pgm file
+ *
+ * arguments: 
+ *      Seq_T *original: a pointer to the sequence of sequences representing 
+ *                      the raster. This will be used to get the length and 
+ *                      width of the raster, alongside the contents of the 
+ *                      raster, and print all of the information needed for 
+ *                      to stdout.
+ * returns: void 
+ */
 void printOutput(Seq_T *original)
 {
+        
         int rows = Seq_length(*original);
-        int cols = Seq_length(Seq_get(*original, 0));
+        int cols = Seq_length(*(Seq_T *)Seq_get(*original, 0));
         int maxVal = 255;
         printf("P5\n%d %d\n%d\n", cols, rows, maxVal);
-        for (int i = 0; i < rows; i++)
+        for (int i = 0; i < Seq_length(*original); i++)
         {
-                for (int j = 0; j < cols; i++)
-                {
-                        printf("%c", *((char *) Seq_get(Seq_get(*original, j), 
-                                                                          i)));
-                }
-                
+                for (int j = 0; j < 
+                               Seq_length(*(Seq_T *)Seq_get(*original, i)); j++)
+                        printf("%c", 
+                           *(int *)Seq_get(*(Seq_T *)Seq_get(*original, i), j));
         }
-}*/
+}
 
 
 void restore(FILE *fd)
 {
         Table_T tableOfAtoms = Table_new(20, NULL, NULL);
         size_t length = -2;
-        Seq_T *original;
-        bool originFound = false;
+        Seq_T *original = NULL;
+        char *line = NULL;
 
         /* Loops until the end of the file/input stream. */
-        while (length != 0) {
-                char *line = NULL;
+        length = readaline(fd, &line);
+        while (length > 0) {
+                Seq_T *values = malloc(sizeof(*values));
+                *values = Seq_new(1);
 
-                length = readaline(fd, &line);
-                Seq_T values = Seq_new(2);
-                length = parser(&line, &values, length);
-                
-                //printf("This line parsed is: %s, with length %ld. And ", line, length);
-                for (int i = 0; i < Seq_length(values); i++) {
-                    //printf("%d ", *((int *)Seq_get(values, i)));
-                }
-                //printf("\n");
-                
-                
-                /* Add values to table */
+                length = parser(&line, values, length);
+
+
                 const char *tempAtom = Atom_new(line, length);
                 if (Table_get(tableOfAtoms, tempAtom) == NULL) {
-                        if (!originFound) {
-                                Table_put(tableOfAtoms, tempAtom, Seq_seq(
-                                                               &values, NULL));
-                        }
-                }
-                else if (originFound) {
-                    Seq_addhi(original, values);
+                        Seq_T *valuesSeq = malloc(sizeof(*valuesSeq));
+                        *valuesSeq = Seq_seq(values, NULL);
+                        Table_put(tableOfAtoms, tempAtom, valuesSeq);
                 }
                 else {
-                    original = (Seq_T *)Table_get(tableOfAtoms, tempAtom);
-                    originFound = true;
-                }
-
-                free(line);
-        }
-
-        
-        int cols = Seq_length(Seq_get(*original, 0));
-        int rows = Seq_length(*original);
-        int maxVal = 255;
-        printf("P5\n%d %d\n%d\n", cols, rows, maxVal);
-        for (int i = 0; i < rows; i++)
-        {
-                for (int j = 0; j < cols; i++)
-                {
-                        printf("%c", *((char *) Seq_get(Seq_get(*original, j), 
-                                                                          i)));
+                        if (original == NULL)
+                                original = (Seq_T *)Table_get(tableOfAtoms, 
+                                                                      tempAtom);
+                        Seq_addhi(*original, values);
                 }
                 
+
+                values = NULL;
+
+
+                free(line);
+                length = readaline(fd, &line);
         }
-       // printOutput(original);
+        free(line);
+        
+        printOutput(original);
 
-
+        Table_map(tableOfAtoms, vfree, NULL);
+        
         Table_free(&tableOfAtoms);
 }
 
@@ -211,3 +239,5 @@ FILE *open_or_abort(char *fname, char *mode)
 //         //free(singleIntChar);
 //         Seq_free(&values);
 // }
+
+

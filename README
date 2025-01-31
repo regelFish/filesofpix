@@ -1,0 +1,28 @@
+/**********************************************************
+* Project 1: filesofpix
+* CS 40
+* Lawer Nyako (lnyako01) & 
+* README
+* 1-29-2025
+*
+*********************************************************/
+
+• Acknowledges help you may have received or collaborative work you may have undertaken with classmates, programming partners, course staff, or others (including AIs)
+• Identifies what has been correctly implemented and what has not
+• Says approximately how many hours you have spent completing the assignment
+
+
+Compile/run:
+     - Compile using
+            make zap
+     - run executable with
+            ./zap [zap | unzap] inputFile outputFile
+    
+
+
+Acknowledgements: 
+Slides/Lectures by Prof. Sheldon and Prof. Mendelsohn
+
+Time Spent:
+21 hours
+

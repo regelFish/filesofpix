@@ -42,7 +42,7 @@ void expand(char **buffer, int *capacityP, int *numCharsP)
  * Notes:
  *      Will CRE if either argument is NULL
  *      Will CRE if there is an error when reading the file
- *      Will CRE 
+ *      Will CRE if the if malloc fails
  */
 size_t readaline(FILE *inputfd, char **datapp) 
 {
@@ -56,24 +56,20 @@ size_t readaline(FILE *inputfd, char **datapp)
         if (*datapp == NULL) 
                 RAISE(mem_aloc_fail);
 
-        char ch;
+        int ch;
         ch = fgetc(inputfd);
 
         while (ch != EOF) {
                 if (ferror(inputfd))
                         RAISE(read_fail);
-                if (ch != '\r') {
-                        if(numChars == capacity)
-                                expand(datapp, &capacity, &numChars);
-                        (*datapp)[numChars] = ch;
-                        numChars++;
-                        if (ch == '\n') {
-                                return numChars;
-                        }
+                if(numChars == capacity)
+                        expand(datapp, &capacity, &numChars);
+                (*datapp)[numChars] = (char) ch;
+                numChars++;
+                if (ch == '\n') {
+                        return numChars;
                 }
                 ch = fgetc(inputfd);
         }
-        free(*datapp);    
-        *datapp = NULL;
-        return 0;
+        return numChars;
 }

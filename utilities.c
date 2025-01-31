@@ -27,6 +27,7 @@ Except_T Umem_aloc_fail = { "Failed to malloc memory" };
  */
 bool isInt(char c) 
 {
+        /* digits start at ASCII value 48 and end at 57 */
         if ((c >= 48) && (c <= 57)) {
                 return true;
         }
@@ -43,7 +44,11 @@ void freeSeqNest(Seq_T *target)
         for (int i = 0; i < Seq_length(*target); i++)
         {
                 for (int j = 0; j < 
+<<<<<<< HEAD
                                  Seq_length(*(Seq_T *)Seq_get(*target, i)); j++)
+=======
+                                Seq_length(*(Seq_T *)Seq_get(*target, i)); j++)
+>>>>>>> 582774d (i hope we're done)
                 {
                         free(Seq_get(*(Seq_T *)Seq_get(*target, i), j));
                 }
@@ -70,13 +75,25 @@ void allocCheck(void* ptr)
 }
 
 /* vfree
- * purpose: Higher order function to map into Table_map
+ * purpose: Higher order function to map into Table_map. Frees values in table
+ *          these values are nested sequences
  * 
+<<<<<<< HEAD
  * Parameters: 
  *             const void *key 
  *             void *value
  *              
  * Parameters: cl 
+=======
+ * arguments: 
+ *             const void *key: key in table, an atom (not used)
+ *             void *value:     value in table, a nested sequence, the memory
+ *                              used by these values are freed in this function
+ *             void *cl:        extra parameters to function (not used)
+ *              
+ * 
+ * 
+>>>>>>> 582774d (i hope we're done)
  */
 static void vfree(const void *key, void **value, void *cl)
 {
@@ -92,9 +109,6 @@ static void vfree(const void *key, void **value, void *cl)
  *      Seq_T *seq:     pointer to sequence to be turned into a char array
  *      int length:     length of sequence (is passed through as parameter
  *                      for readability)
- * seq 
- * Parameters: length 
- * returns: char*, 
  * Notes:
  *      Assumes that this a sequence consisting of only chars or values that
  *      can be casted to be chars
@@ -104,8 +118,7 @@ char *seqToStr(Seq_T *seq, int length)
         char* str = malloc(sizeof(*str) * (length));
         allocCheck(str);
 
-        for (int i = 0; i < length; i++)
-        {
+        for (int i = 0; i < length; i++) {
                 str[i] = *((char *)Seq_get(*seq, i));
         }
 
@@ -113,13 +126,31 @@ char *seqToStr(Seq_T *seq, int length)
 }
 
 /* parser
- * purpose: 
+ * purpose: Takes a line from readaline and parses out the digit characters, 
+ *          putting them into a sequence of ints. When you encounter a non digit
+ *          character in the line, add it to a sequence of chars that will be
+ *          turned back into a char*. When you encounter a digit character,
+ *          continue going through the line until you encounter a non digit 
+ *          character, then the digit characters in this sequence will be turned
+ *          into a single int. This int will be added to the sequence of ints.
  *
+<<<<<<< HEAD
  * Parameters: 
  *      char **line:    a pointer to the address of the original 
  *      Seq_T *values:  
  *      int length:     
  * returns: the length of the string of corrupted characters
+=======
+ * arguments: 
+ *      char **line:    a pointer to the address of the a line in the file, 
+ *                      once the non digit characters are parsed, this will
+ *                      then become a pointer to the address of the string 
+ *                      containing those characters
+ *      Seq_T *values:  a pointer to a sequence that will be populated by the
+ *                      ints made from non digit characters
+ *      int length:     the length of the line from the file
+ * returns: the length of the string of non digit characters
+>>>>>>> 582774d (i hope we're done)
  * Notes: 
  *      - It is an unchecked exception for the inputted length to differ from 
  *      the actual length of the line
@@ -150,12 +181,8 @@ int parser(char **line, Seq_T *values, int length)
                         makingInt = false;
                         Seq_addhi(corrSeq, c);
                 }
-
                 /* Note: This is a bit of defensive programming and only 
                  *  one check is likely needed */
-                /* When the current character is not an digit and you have 
-                 * encoutered a digit before, convert the "string" of digit 
-                 * characters into an int and add it to the sequence of ints*/
                 if ((startOfInt != NULL) &&
                                            (!makingInt || (i == length - 1))) {
                         char *endOfInt = *line + i;
@@ -169,7 +196,7 @@ int parser(char **line, Seq_T *values, int length)
         }
         int corrLength = Seq_length(corrSeq);
         char* corrLine = seqToStr(&corrSeq, corrLength);
-        
+
         Seq_free(&corrSeq);
         
         free(*line);
@@ -187,7 +214,6 @@ int parser(char **line, Seq_T *values, int length)
  *                      width of the raster, alongside the contents of the 
  *                      raster, and print all of the information needed for 
  *                      to stdout.
- * returns: void
  */
 void printOutput(Seq_T *original)
 {
@@ -221,7 +247,6 @@ void printOutput(Seq_T *original)
  *                                      file.
  *      Table_T *tableOfAtoms:          A pointer to the table of atoms and 
  *                                      associated sequence of sequences.
- * Parameters: tableOfAtoms 
  * returns: 
  *      Seq_T*, a pointer to the original raster of the image. This is a 
  *      sequence of sequences of ints. 
@@ -283,8 +308,8 @@ void restore(FILE *fd)
 
 
         /* because original is pointing to a value inside the table, and this
-         * value needs to be accessed in the printOutput function, the memory used 
-         * by the table and its contents are freed here 
+         * value needs to be accessed in the printOutput function, the memory 
+         * used by the table and its contents are freed here 
         */
         Table_map(tableOfAtoms, vfree, NULL);
         

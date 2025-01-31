@@ -83,7 +83,8 @@ restoration: restoration.o readaline.o utilities.o
 	$(CC) $(LDFLAGS) -o restoration  restoration.o readaline.o utilities.o \
 	$(LDLIBS)
 	
-
+# was used when testing the parser function in readline, there was a main
+# file there but we removed it
 # utilities: utilities.o readaline.o
 # 	$(CC) $(LDFLAGS) -o utilities readaline.o utilities.o $(LDLIBS)
 #

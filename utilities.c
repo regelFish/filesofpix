@@ -1,107 +1,335 @@
+/* 
+ * utilities.c
+ * by Lawer Nyako {lnyako01}, Rigoberto Rodriguez-Anton {rrodri08}, 01/30/2025
+ * filesofpix
+ * 
+ * summary: Holds the implementations for restore and related helper functions.
+ *              Additionally, holds the implementation for the open_or_abort 
+ *              function used by main.
+ *          
+ *              restore uses Hanson's data structures to quickly and efficiently
+ *              extract the original data from a corrupted pgm file, outputing
+ *              the result to stdout. 
+ */
+
 #include "utilities.h"
 
 Except_T open_abort = { "Could not open file" };
+Except_T Umem_aloc_fail = { "Failed to malloc memory" };
 
+
+/* isInt
+ * purpose: Checks if an inputted char is a digit
+ *
+ * Parameters: 
+ *      char c: char to be checked
+ * returns: true is c is a digit, false if not
+ */
 bool isInt(char c) 
 {
+        /* digits start at ASCII value 48 and end at 57 */
         if ((c >= 48) && (c <= 57)) {
                 return true;
         }
         return false;
 }
 
+/* freeSeqNest
+ * purpose: Frees a nest of sequences.
+ * 
+ * Parameters: target, a pointer to the target Sequence nest to free.
+ */
+void freeSeqNest(Seq_T *target)
+{
+        for (int i = 0; i < Seq_length(*target); i++)
+        {
+                for (int j = 0; j < 
+<<<<<<< HEAD
+                                 Seq_length(*(Seq_T *)Seq_get(*target, i)); j++)
+=======
+                                Seq_length(*(Seq_T *)Seq_get(*target, i)); j++)
+>>>>>>> 582774d (i hope we're done)
+                {
+                        free(Seq_get(*(Seq_T *)Seq_get(*target, i), j));
+                }
+                
+                Seq_free((Seq_T *)Seq_get(*target, i));
+                free((Seq_T *)Seq_get(*target, i));
+        }
+        Seq_free(target);
+        free(target);
+}
+
+
+/* allocCheck
+ * purpose: Checks if memory has been successfully allocated to the given 
+ *              address. Will raise an Umem_aloc_fail exception if memory 
+ *              hasn't been allocated.
+ * 
+ * Parameters: ptr, the address to check the memory of.
+ */
+void allocCheck(void* ptr)
+{
+        if (ptr == NULL)
+                RAISE(Umem_aloc_fail);
+}
+
+/* vfree
+ * purpose: Higher order function to map into Table_map. Frees values in table
+ *          these values are nested sequences
+ * 
+<<<<<<< HEAD
+ * Parameters: 
+ *             const void *key 
+ *             void *value
+ *              
+ * Parameters: cl 
+=======
+ * arguments: 
+ *             const void *key: key in table, an atom (not used)
+ *             void *value:     value in table, a nested sequence, the memory
+ *                              used by these values are freed in this function
+ *             void *cl:        extra parameters to function (not used)
+ *              
+ * 
+ * 
+>>>>>>> 582774d (i hope we're done)
+ */
+static void vfree(const void *key, void **value, void *cl)
+{
+        freeSeqNest(*value);
+        (void) key;
+        (void) cl;
+}
+
+/* seqToStr
+ * purpose: converts a sequence of chars to a char array 
+ *
+ * Parameters: 
+ *      Seq_T *seq:     pointer to sequence to be turned into a char array
+ *      int length:     length of sequence (is passed through as parameter
+ *                      for readability)
+ * Notes:
+ *      Assumes that this a sequence consisting of only chars or values that
+ *      can be casted to be chars
+ */
+char *seqToStr(Seq_T *seq, int length)
+{
+        char* str = malloc(sizeof(*str) * (length));
+        allocCheck(str);
+
+        for (int i = 0; i < length; i++) {
+                str[i] = *((char *)Seq_get(*seq, i));
+        }
+
+        return str;
+}
+
+/* parser
+ * purpose: Takes a line from readaline and parses out the digit characters, 
+ *          putting them into a sequence of ints. When you encounter a non digit
+ *          character in the line, add it to a sequence of chars that will be
+ *          turned back into a char*. When you encounter a digit character,
+ *          continue going through the line until you encounter a non digit 
+ *          character, then the digit characters in this sequence will be turned
+ *          into a single int. This int will be added to the sequence of ints.
+ *
+<<<<<<< HEAD
+ * Parameters: 
+ *      char **line:    a pointer to the address of the original 
+ *      Seq_T *values:  
+ *      int length:     
+ * returns: the length of the string of corrupted characters
+=======
+ * arguments: 
+ *      char **line:    a pointer to the address of the a line in the file, 
+ *                      once the non digit characters are parsed, this will
+ *                      then become a pointer to the address of the string 
+ *                      containing those characters
+ *      Seq_T *values:  a pointer to a sequence that will be populated by the
+ *                      ints made from non digit characters
+ *      int length:     the length of the line from the file
+ * returns: the length of the string of non digit characters
+>>>>>>> 582774d (i hope we're done)
+ * Notes: 
+ *      - It is an unchecked exception for the inputted length to differ from 
+ *      the actual length of the line
+ *      - Will CRE if malloc fails
+ */
 int parser(char **line, Seq_T *values, int length) 
 {
-        int corrLength = 0;
-        char* corrLine = NULL;
-        bool intReal = false;
+        bool makingInt = false;
         char* startOfInt = NULL;
+        Seq_T corrSeq = Seq_new(1);
         
         for (int i = 0; i < length; i++)
         {
-                char c = (*line)[i];
-                if (isInt(c)) {
+                char *c = (*line) + i;
+                if (isInt(*c)) {
                         /* When you encouter a digit and the character is the 
                          * first value of the int, make the location of this 
                          * character the start of the characters that will be
                          * turned into an int 
                          */
-                        if (!intReal) {
+                        if (!makingInt) {
                                 startOfInt = (*line + i);
                         }
-                        intReal = true;
+                        makingInt = true;
                 } else {
                         /* When you encouter a non-digit character, add 
                          * it to the string of corruption characters*/
-                        intReal = false;
-                        if (corrLine == NULL) {
-                                corrLine = Str_catv(&c, 0, 0, NULL);
-                        }
-                        else {
-                                corrLine = Str_catv(corrLine, 1, corrLength, 
-                                                    &c, 0, 0, NULL);
-                        }
-                        corrLength++;
+                        makingInt = false;
+                        Seq_addhi(corrSeq, c);
                 }
                 /* Note: This is a bit of defensive programming and only 
                  *  one check is likely needed */
-                /* When the current character is not an digit and you have 
-                 * encoutered a digit before, convert the "string" of digit 
-                 * characters into an int and add it to the sequence of ints*/
-                if (!intReal && (startOfInt != NULL)) {
-                        char *endptr = *line + i;
-                        int toInt = strtol(startOfInt, &endptr, 10);
+                if ((startOfInt != NULL) &&
+                                           (!makingInt || (i == length - 1))) {
+                        char *endOfInt = *line + i;
+                        int *toInt = malloc(sizeof(*toInt));
+                        allocCheck(toInt);
+                        *toInt = strtol(startOfInt, &endOfInt, 10);
                         startOfInt = NULL;
-                        Seq_addhi(*values, &toInt);
+                        makingInt = false;
+                        Seq_addhi(*values, toInt);
                 }
         }
+        int corrLength = Seq_length(corrSeq);
+        char* corrLine = seqToStr(&corrSeq, corrLength);
+
+        Seq_free(&corrSeq);
+        
         free(*line);
-        line = &corrLine;
+        *line = corrLine;
 
         return corrLength;
 }
 
-
-
-void restore(FILE *fd)
+/* printOutput
+ * purpose: prints out the pgm file
+ *
+ * Parameters: 
+ *      Seq_T *original: a pointer to the sequence of sequences representing 
+ *                      the raster. This will be used to get the length and 
+ *                      width of the raster, alongside the contents of the 
+ *                      raster, and print all of the information needed for 
+ *                      to stdout.
+ */
+void printOutput(Seq_T *original)
 {
-        Table_T tableOfAtoms = Table_new(20, NULL, NULL);
-        size_t length = -2;
+        
+        int rows = Seq_length(*original);
+        int cols = Seq_length(*(Seq_T *)Seq_get(*original, 0));
+        int maxVal = 255;
+        printf("P5\n%d %d\n%d\n", cols, rows, maxVal);
+        for (int i = 0; i < rows; i++)
+        {
+
+                for (int j = 0; j < cols; j++) {
+                        printf("%c", 
+                           *(int *)Seq_get(*(Seq_T *)Seq_get(*original, i), j));
+                        }
+        }
+}
+
+/* decorrupt
+ * purpose: Reads through the corrupted file. Then it takes the parsed contents
+ *          of each line, and populates a table where the key is an atom of
+ *          non digit characters from a line and the value is a sequence of the
+ *          digit sequences where the corrupted non digit sequence shows up.
+ *          Once you find the same non digit sequence multiple times, you have
+ *          the corrupted non digit sequence. For each digit sequence you find
+ *          with the corrupted non digit sequence, you add the digit sequence
+ *          to its associated sequence of digit sequences.
+ *
+ * Parameters: 
+ *      FILE *fd:                       File stream pointer to the corrupted 
+ *                                      file.
+ *      Table_T *tableOfAtoms:          A pointer to the table of atoms and 
+ *                                      associated sequence of sequences.
+ * returns: 
+ *      Seq_T*, a pointer to the original raster of the image. This is a 
+ *      sequence of sequences of ints. 
+ */
+Seq_T *decorrupt(FILE *fd, Table_T *tableOfAtoms)
+{
+        Seq_T *original = NULL;
+        char *line = NULL;
+        size_t length = 0;
 
         /* Loops until the end of the file/input stream. */
-        while (length != 0) {
-                char *line = NULL;
+        length = readaline(fd, &line);
+        while (length > 0) {
+                Seq_T *values = malloc(sizeof(*values));
+                *values = Seq_new(1);
+                length = parser(&line, values, length);
 
-                length = readaline(fd, &line);
-                Seq_T values = Seq_new(2);
-                length = parser(&line, &values, length);
-                
-                printf("This line parsed is: %s, with length %ld. And ", 
-                                                                 line, length);
-                for (int i = 0; i < Seq_length(values); i++) {
-                    printf("%d ", *((int *)Seq_get(values, i)));
-                }
-                printf("\n");
-                
-                
-                /* Add values to table */
                 const char *tempAtom = Atom_new(line, length);
-                if (Table_get(tableOfAtoms, tempAtom) == NULL) {
-                    Table_put(tableOfAtoms, tempAtom, Seq_seq(&values, NULL));
+                if (Table_get(*tableOfAtoms, tempAtom) == NULL) {
+                        Seq_T *valuesSeq = malloc(sizeof(*valuesSeq));
+                        allocCheck(valuesSeq);
+                        *valuesSeq = Seq_seq(values, NULL);
+                        Table_put(*tableOfAtoms, tempAtom, valuesSeq);
                 }
                 else {
-                    Seq_addhi(Table_get(tableOfAtoms, tempAtom), values);
+                        if (original == NULL)
+                                original = (Seq_T *)Table_get(*tableOfAtoms, 
+                                                                      tempAtom);
+                        Seq_addhi(*original, values);
                 }
+                values = NULL;
 
                 free(line);
+                length = readaline(fd, &line);
         }
+        free(line);
+        return original;
+}
 
-        (void) fd;
-        (void) tableOfAtoms;
+/* restore
+ * purpose: Restore a file from its corrupted version into an uncorrupted pgm 
+ *          that can be read by Pnmrdr
+ *
+ * Parameters: 
+ *      FILE *fd:       A pointer to the opened file to be read through 
+ *                      restored
+ */
+void restore(FILE *fd)
+{
+        /*
+         * original is the the original raster of the uncorrupted pgm file
+         */
+        Seq_T *original = NULL;
+        Table_T tableOfAtoms = Table_new(2, NULL, NULL);
 
+        original = decorrupt(fd, &tableOfAtoms);
+
+        printOutput(original);
+
+
+        /* because original is pointing to a value inside the table, and this
+         * value needs to be accessed in the printOutput function, the memory 
+         * used by the table and its contents are freed here 
+        */
+        Table_map(tableOfAtoms, vfree, NULL);
+        
         Table_free(&tableOfAtoms);
 }
 
+/* open_or_abort
+ * purpose: opens file stream for use in program
+ * 
+ *
+ * Parameters: 
+ *      char *fname:    name of file to open
+ *      char *mode:     mode of file accessing
+ * returns: FILE*, a pointer to the file stream
+ * Expects:
+ *      fname and mode to not be NULL (for its use in this project, they will 
+ *      never be)
+ * Notes:
+ *      Will CRE if the file, named by fname fails to open
+ */
 FILE *open_or_abort(char *fname, char *mode)
 {
         FILE *fp = fopen(fname, mode);

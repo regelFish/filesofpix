@@ -1,8 +1,33 @@
+/* 
+ * restoration.c
+ * by Lawer Nyako {lnyako01}, Rigoberto Rodriguez-Anton {rrodri08}, 01/30/2025
+ * filesofpix
+ * 
+ * summary: Restoration takes a corrupted pgm file and restores its contents to
+ *              a readable state. 
+ * 
+ *              restoration.c Holds the main function for the filesofpix 
+ *              homework assignment. This file handles file opening and closing.
+ *              This file alse takes input from stdin in the case where no 
+ *              parameters are provided on execution.
+ * 
+ */
+
 #include "utilities.h"
 
 Except_T bad_use = { "Only one argument allowed" };
 
-
+/* main
+ * purpose: Opens the requested file while performing error checks, and calls 
+ *                      restore to remove corruption from the requested file. 
+ *
+ * Parameters: 
+ *      int argc:       The number of Parameters provided when executed.
+ *      char *argv:     The contents in each argument. In this case, 
+ *                      the name of the file to restore. 
+ * 
+ * returns: Returns EXIT_SUCCESS if successfully executed. 
+ */
 int main(int argc, char *argv[])
 {
         char *fname;
@@ -11,7 +36,6 @@ int main(int argc, char *argv[])
                 fname = argv[1];
         }
         else if (argc == 1) {
-                printf("Type in a file name: ");
                 int index = readaline(stdin, &fname);
                 fname[index - 1] = '\0';
         }
@@ -26,4 +50,4 @@ int main(int argc, char *argv[])
 
         fclose(fd);
         return EXIT_SUCCESS;
-}
+} 

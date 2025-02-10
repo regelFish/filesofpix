@@ -1,0 +1,27 @@
+/**********************************************************
+* README
+* Project 1: filesofpix
+* CS 40
+* Lawer Nyako (lnyako01) & Rigoberto Rodriguez-Anton (rrodri08)
+* 1-30-2025
+*
+*********************************************************/
+
+
+Implementation Successes/Failures:
+       Our readaline function can read lines of any length (as long as there is
+       enough RAM to store them).
+       We successfully restored all the files in the corruption folder in
+       /comp/40.
+       To our eyes, we have implemented restoration succefully to spec,
+       outputting readable and sensible raw pgm's to the stdout stream. These
+       pgms can be displayed using pnmrdr.
+
+
+
+Acknowledgements: 
+Slides/Lectures by Prof. Sheldon and Prof. Mendelsohn
+
+Time Spent:
+27 hours
+

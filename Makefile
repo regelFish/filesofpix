@@ -1,6 +1,8 @@
 # 	           Makefile for CS 40 Homework 1
 #
 #     Author: Noah Mendelsohn (adapted from Norman Ramsey's compile script)
+#  			  Lawer Nyako (lnyako01) & Rigoberto Rodriguez-Anton (rrodri08)
+#  			  1/30/2025
 #
 #  Maintenance targets:
 #
@@ -80,10 +82,13 @@ clean:
 restoration: restoration.o readaline.o utilities.o
 	$(CC) $(LDFLAGS) -o restoration  restoration.o readaline.o utilities.o \
 	$(LDLIBS)
-
+	
+# was used when testing the parser function in readline, there was a main
+# file there but we removed it
+# utilities: utilities.o readaline.o
+# 	$(CC) $(LDFLAGS) -o utilities readaline.o utilities.o $(LDLIBS)
 #
 # Other Shortcuts worth nothing
 # $@ takes the name of the build rule and inserts it into the command
 # $^ inserts the relocatable object file names into the command
 #
-
